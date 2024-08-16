@@ -34,9 +34,9 @@ runs:
         with:
           gradle-version: 8.9
 
-      - name: Set up JavaFX deps
+      - name: Set up JavaFX deps (for Linux)
         shell: bash
-        if: ${{ inputs.setup-javafx-headless }}
+        if: ${{ inputs.setup-javafx-headless }} && ( runner.os == 'Linux' )
         run: |
           sudo apt-get update -y && sudo apt-get install -y libxxf86vm1 libgl1-mesa-glx
 
