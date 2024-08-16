@@ -19,17 +19,10 @@ on:
         type: boolean
         default: false
 
-permissions:
-  checks: write
-  contents: read
-
-jobs:
-  build:
-
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
+runs:
+  using: composite
+  timeout-minutes: 20
+  steps:
       - uses: actions/checkout@v4
 
       - name: Setup JDK
@@ -60,7 +53,7 @@ jobs:
           # If no subproject specified, it will default to '.'
           cd ${{ inputs.subproject }}
           gradle test -Pcategory=${{ inputs.test-category }} --info --no-daemon -PrunningOnCIServer=true
-
+          
       - name: Publish JUnit test report - ${{ inputs.test-category }}
         uses: mikepenz/action-junit-report@v4
         if: success() || failure() # always run even if the previous step fails
