@@ -7,7 +7,6 @@ on:
         description: 'Subproject'
         required: false
         type: string
-        default: '.'
       test-category:
         description: 'Test category'
         required: false
@@ -50,8 +49,9 @@ runs:
       - name: Gradle test - ${{ inputs.test-category }}
         shell: bash
         run: |
-          # If no subproject specified, it will default to '.'
-          cd ${{ inputs.subproject }}
+          if [[ -n "${{ inputs.subproject }}" ]]; then
+            cd "${{ inputs.subproject }}"
+          fi
           gradle test -Pcategory=${{ inputs.test-category }} --info --no-daemon -PrunningOnCIServer=true
           
       - name: Publish JUnit test report - ${{ inputs.test-category }}
