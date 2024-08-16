@@ -49,7 +49,6 @@ runs:
 
       - name: Gradle test - ${{ inputs.test-category }}
         shell: bash
-        working-directory: ${{ github.workspace }}
         run: |
           # If no subproject specified, it will default to '.'
           cd ${{ inputs.subproject }}
@@ -57,7 +56,6 @@ runs:
           
       - name: Publish JUnit test report - ${{ inputs.test-category }}
         uses: mikepenz/action-junit-report@v4
-        working-directory: ${{ github.workspace }}
         if: success() || failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'
