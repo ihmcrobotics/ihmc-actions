@@ -21,7 +21,6 @@ on:
 
 runs:
   using: composite
-  timeout-minutes: 20
   steps:
       - uses: actions/checkout@v4
 
