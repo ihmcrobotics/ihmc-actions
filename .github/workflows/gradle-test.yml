@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        repo: ${{ fromJSON(inputs.repos) }}
+        repo: ${{ inputs.repos != '' && fromJSON(inputs.repos) || [''] }}
     steps:
       # Checkout repository-group
       - name: Checkout repository-group
