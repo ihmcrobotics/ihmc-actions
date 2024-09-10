@@ -1,0 +1,90 @@
+name: Gradle test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+      - main
+      - master
+  pull_request:
+  workflow_call:
+    inputs:
+      repos:
+        required: true
+        type: string
+        description: 'JSON array of repositories to checkout, repos are required to be in the ihmcrobotics org. Do not include ihmcrobotics in the name.'
+      subproject:
+        required: false
+        type: string
+        description: 'Sub project name'
+
+jobs:
+  checkout:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo: ${{ fromJSON(inputs.repos) }}
+    steps:
+      # Checkout repository-group
+      - name: Checkout repository-group
+        uses: actions/checkout@v4
+        with:
+          repository: ihmcrobotics/repository-group
+          ref: develop
+          path: repository-group
+
+      # Checkout current repo
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: repository-group/${{ github.event.repository.name }}
+
+      # Try to checkout each required repo with the same branch name
+      - name: Checkout ${{ matrix.repo }}
+        uses: actions/checkout@v4
+        with:
+          repository: ihmcrobotics/${{ matrix.repo }}
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }} # Set by the org
+          fetch-depth: 0
+          path: repository-group/${{ matrix.repo }}
+        continue-on-error: true
+        id: checkout-same-branch
+
+      # Checkout required repo to develop branch if the same branch name did not exist
+      - name: Checkout ${{ matrix.repo }} to develop
+        if: steps.checkout-same-branch.outcome == 'failure'
+        uses: actions/checkout@v4
+        with:
+          repository: ihmcrobotics/${{ matrix.repo }}
+          ref: develop
+          token: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }} # Set by the org
+          path: repository-group/${{ matrix.repo }}
+
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.1"
+
+      - name: Gradle test
+        run: |
+          if [[ -n "${{ inputs.subproject }}" ]]; then
+            cd repository-group/${{ github.event.repository.name }}/${{ inputs.subproject }}
+          else
+            cd repository-group/${{ github.event.repository.name }}
+          fi
+          gradle test -Pcategory=${{ inputs.test-category }} --info --no-daemon -PrunningOnCIServer=true
+
+      - name: Publish Test Report - ${{ inputs.test-category }}
+        uses: mikepenz/action-junit-report@v4
+        if: success() || failure() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+          detailed_summary: true
