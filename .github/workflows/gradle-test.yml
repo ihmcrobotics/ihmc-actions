@@ -7,6 +7,7 @@ on:
         required: false
         type: string
         description: 'JSON array of repositories to checkout, repos are required to be in the ihmcrobotics org. Do not include ihmcrobotics in the name.'
+        default: [""]
       subproject:
         required: false
         type: string
@@ -22,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        repo: ${{ inputs.repos != '' && fromJSON(inputs.repos) || [''] }}
+        repo: ${{ fromJSON(inputs.repos) }}
     steps:
       # Checkout repository-group
       - name: Checkout repository-group
@@ -40,7 +41,7 @@ jobs:
 
       # Try to checkout each required repo with the same branch name
       - name: Checkout ${{ matrix.repo }}
-        if: ${{ inputs.repos }}
+        if: ${{ matrix.repo }} != ''
         uses: actions/checkout@v4
         with:
           repository: ihmcrobotics/${{ matrix.repo }}
