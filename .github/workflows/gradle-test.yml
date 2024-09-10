@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       repos:
-        required: true
+        required: false
         type: string
         description: 'JSON array of repositories to checkout, repos are required to be in the ihmcrobotics org. Do not include ihmcrobotics in the name.'
       subproject:
@@ -40,6 +40,7 @@ jobs:
 
       # Try to checkout each required repo with the same branch name
       - name: Checkout ${{ matrix.repo }}
+        if: ${{ inputs.repos }}
         uses: actions/checkout@v4
         with:
           repository: ihmcrobotics/${{ matrix.repo }}
