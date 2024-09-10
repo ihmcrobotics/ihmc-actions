@@ -7,7 +7,7 @@ on:
         required: false
         type: string
         description: 'JSON array of repositories to checkout, repos are required to be in the ihmcrobotics org. Do not include ihmcrobotics in the name.'
-        default: [""]
+        default: '[""]'
       subproject:
         required: false
         type: string
