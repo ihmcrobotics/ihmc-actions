@@ -1,13 +1,6 @@
 name: Gradle test
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - develop
-      - main
-      - master
-  pull_request:
   workflow_call:
     inputs:
       repos:
