@@ -11,6 +11,11 @@ on:
         required: false
         type: string
         description: 'Sub project name'
+      test-category:
+        required: false
+        type: string
+        description: 'Test category'
+        default: 'fast'
 
 jobs:
   checkout:
