@@ -3,7 +3,7 @@ name: Gradle test
 on:
   workflow_call:
     inputs:
-      repos:
+      extra-repos:
         required: false
         type: string
         description: 'JSON array of repositories to checkout, repos are required to be in the ihmcrobotics org. Do not include ihmcrobotics in the name.'
@@ -17,13 +17,18 @@ on:
         type: string
         description: 'Test category'
         default: 'fast'
+      requires-self-hosted:
+        required: false
+        type: boolean
+        description: 'Set to true to use a self-hosted runner, false for ubuntu-latest'
+        default: false
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        repo: ${{ fromJSON(inputs.repos) }}
+    runs-on: ${{ inputs.requires-self-hosted && 'self-hosted' || 'ubuntu-latest' }}
+    container:
+      image: ${{ inputs.requires-self-hosted && 'ihmcrobotics/ihmc-runner-nvidia:1.0.1' || 'ihmcrobotics/ihmc-runner:1.0.0' }}
+      options: ${{ inputs.requires-self-hosted && '--runtime=nvidia --gpus all --cpus 4' || '--cpus 4' }}
     steps:
       # Checkout repository-group
       - name: Checkout repository-group
@@ -32,35 +37,39 @@ jobs:
           repository: ihmcrobotics/repository-group
           ref: develop
           path: repository-group
+          lfs: false
 
       # Checkout current repo
       - name: Checkout
         uses: actions/checkout@v4
         with:
           path: repository-group/${{ github.event.repository.name }}
+          lfs: false
 
-      # Try to checkout each required repo with the same branch name
-      - name: Checkout ${{ matrix.repo }}
-        if: ${{ matrix.repo }} != ''
-        uses: actions/checkout@v4
-        with:
-          repository: ihmcrobotics/${{ matrix.repo }}
-          ref: ${{ github.ref_name }}
-          token: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }} # Set by the org
-          fetch-depth: 0
-          path: repository-group/${{ matrix.repo }}
-        continue-on-error: true
-        id: checkout-same-branch
-
-      # Checkout required repo to develop branch if the same branch name did not exist
-      - name: Checkout ${{ matrix.repo }} to develop
-        if: steps.checkout-same-branch.outcome == 'failure'
-        uses: actions/checkout@v4
-        with:
-          repository: ihmcrobotics/${{ matrix.repo }}
-          ref: develop
-          token: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }} # Set by the org
-          path: repository-group/${{ matrix.repo }}
+      - name: Checkout extra repos
+        env:
+          REPOS: ${{ inputs.extra-repos }}
+          CURRENT_REF: ${{ github.ref_name }}
+        run: |
+          # Parse JSON input and generate repo list
+          REPO_LIST=$(echo "$REPOS" | jq -r '.[]')
+          
+          # Checkout each repository
+          for repo in $REPO_LIST; do
+            echo "Checking out $repo"
+            git clone https://github.com/ihmcrobotics/$repo.git repository-group/$repo
+            cd repository-group/$repo
+          
+            # Try to checkout the current ref
+            if git rev-parse --verify $CURRENT_REF >/dev/null 2>&1; then
+              git checkout $CURRENT_REF
+            else
+              echo "Ref $CURRENT_REF not found in $repo, checking out develop"
+              git checkout develop || echo "Failed to checkout develop for $repo"
+            fi
+          
+            cd ../../
+          done
 
       - name: Setup JDK
         uses: actions/setup-java@v3
@@ -74,13 +83,23 @@ jobs:
           gradle-version: "8.10.1"
 
       - name: Gradle test
+        env:
+          SUBPROJECT: ${{ inputs.subproject }}
+          CURRENT_REPO: ${{ github.event.repository.name }}
+          TEST_CATEGORY: ${{ inputs.test-category }}
         run: |
-          if [[ -n "${{ inputs.subproject }}" ]]; then
-            cd repository-group/${{ github.event.repository.name }}/${{ inputs.subproject }}
+          if [ -n "$SUBPROJECT" ]; then
+            echo "Using subproject: $SUBPROJECT"
+            cd repository-group/$CURRENT_REPO/$SUBPROJECT
           else
-            cd repository-group/${{ github.event.repository.name }}
+            cd repository-group/$CURRENT_REPO
           fi
-          gradle test -Pcategory=${{ inputs.test-category }} --info --no-daemon -PrunningOnCIServer=true
+          
+          git lfs install --local
+          git lfs fetch
+          git lfs pull
+          
+          gradle test -Pcategory=$TEST_CATEGORY --no-daemon -PrunningOnCIServer=true -Dorg.gradle.jvmargs="-Xmx4G"
 
       - name: Publish Test Report - ${{ inputs.test-category }}
         uses: mikepenz/action-junit-report@v4
