@@ -103,8 +103,8 @@ jobs:
 
       - name: Publish Test Report - ${{ inputs.test-category }}
         uses: mikepenz/action-junit-report@v4
-        check_name: JUnit Test Report ${{ inputs.subproject || ''}}
         if: success() || failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'
           detailed_summary: true
+          check_name: JUnit Test Report ${{ inputs.subproject || ''}}
