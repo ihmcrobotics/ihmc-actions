@@ -2,6 +2,10 @@ name: Gradle test
 
 on:
   workflow_call:
+    secrets:
+      ROSIE_PERSONAL_ACCESS_TOKEN:
+        description: 'Personal access token'
+        required: false
     inputs:
       extra-repos:
         required: false
