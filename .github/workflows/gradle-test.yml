@@ -54,6 +54,7 @@ jobs:
         env:
           REPOS: ${{ inputs.extra-repos }}
           CURRENT_REF: ${{ github.ref_name }}
+          ROSIE_PERSONAL_ACCESS_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
         run: |
           # Parse JSON input and generate repo list
           REPO_LIST=$(echo "$REPOS" | jq -r '.[]')
@@ -61,7 +62,12 @@ jobs:
           # Checkout each repository
           for repo in $REPO_LIST; do
             echo "Checking out $repo"
-            git clone https://github.com/ihmcrobotics/$repo.git repository-group/$repo
+            if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
+              echo "Using ihmc-rosie personal access token to clone $repo
+              git clone https://$ROSIE_PERSONAL_ACCESS_TOKEN@github.com/ihmcrobotics/$repo.git repository-group/$repo
+            else
+              git clone https://github.com/ihmcrobotics/$repo.git repository-group/$repo
+            fi
             cd repository-group/$repo
           
             # Try to checkout the current ref
