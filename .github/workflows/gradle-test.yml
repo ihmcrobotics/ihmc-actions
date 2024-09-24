@@ -64,7 +64,7 @@ jobs:
             echo "Checking out $repo"
             if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
               echo "Using ihmc-rosie personal access token to clone $repo
-              git clone https://$ROSIE_PERSONAL_ACCESS_TOKEN@github.com/ihmcrobotics/$repo.git repository-group/$repo
+              git clone https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git repository-group/$repo
             else
               git clone https://github.com/ihmcrobotics/$repo.git repository-group/$repo
             fi
