@@ -38,7 +38,31 @@ action sends junit xml files to evergreen api
 name: Gradle test
 
 on:
-  workflow_call   
+  workflow_call:
+    secrets:
+      ROSIE_PERSONAL_ACCESS_TOKEN:
+        description: 'Personal access token'
+        required: false
+    inputs:
+      extra-repos:
+        required: false
+        type: string
+        description: 'JSON array of repositories to checkout, repos are required to be in the ihmcrobotics org. Do not include ihmcrobotics in the name.'
+        default: '[""]'
+      subproject:
+        required: false
+        type: string
+        description: 'Sub project name'
+      test-category:
+        required: false
+        type: string
+        description: 'Test category'
+        default: 'fast'
+      requires-self-hosted:
+        required: false
+        type: boolean
+        description: 'Set to true to use a self-hosted runner, false for ubuntu-latest'
+        default: false
 
 jobs:
   build:
