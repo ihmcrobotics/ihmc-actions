@@ -17,15 +17,22 @@ runs:
       shell: bash
       run: |
         echo "Workflow Run ID: ${{ github.run_id }}"
-        cd repository-group/${{ github.event.repository.name }}/${{ inputs.subproject }}/src/test/build/test-results/test/
-        for file in TEST-*.xml; do
-          if [ -f "$file" ]; then
-            echo "Sending $file to API"
-            curl -X POST \
-              -H "WorkflowRunID: ${{ github.run_id }}" \
-              -F "file=@$file" \
-              http://evergreen.ihmc.us/api/junitupload.php
-          else
-            echo "No XML files found matching TEST-*.xml"
-          fi
-        done
+        dir="repository-group/${{ github.event.repository.name }}/${{ inputs.subproject }}/src/test/build/test-results/test/"
+        if [ -d "$dir" ]; then
+          echo "Directory exists, changing directory to $dir"
+          cd "$dir"
+        
+          for file in TEST-*.xml; do
+            if [ -f "$file" ]; then
+              echo "Sending $file to API"
+              curl -X POST \
+                -H "WorkflowRunID: ${{ github.run_id }}" \
+                -F "file=@$file" \
+                http://evergreen.ihmc.us/api/junitupload.php
+            else
+              echo "No XML files found matching TEST-*.xml"
+            fi
+          done
+        else
+          echo "Directory $dir does not exist, skipping."
+        fi
