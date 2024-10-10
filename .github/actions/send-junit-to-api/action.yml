@@ -19,6 +19,15 @@ runs:
       run: |
         echo "Workflow Run ID: ${{ github.run_id }}"
 
+        # Define the base URL
+        if [ "${{ contains(runner.labels, 'self-hosted') }}" == "true" ]; then
+          base_url="http://evergreen.ihmc.us"
+        else
+          base_url="https://evergreen.ihmc.us"
+        fi
+
+        echo "Using base URL: $base_url"
+
         # Check if the subproject input is provided
         if [ -n "${{ inputs.subproject }}" ]; then
           dir="repository-group/${{ github.event.repository.name }}/${{ inputs.subproject }}/src/test/build/test-results/test/"
@@ -36,9 +45,9 @@ runs:
               curl -L -X POST \
                 -H "WorkflowRunID: ${{ github.run_id }}" \
                 -F "file=@$file" \
-                https://evergreen.ihmc.us/api/junitupload.php
+                "$base_url/api/junitupload.php"
 
-              curl -L -X GET https://evergreen.ihmc.us/api/update_workflow.php
+              curl -L -X GET "$base_url/api/update_workflow.php"
             else
               echo "No XML files found matching TEST-*.xml"
             fi
