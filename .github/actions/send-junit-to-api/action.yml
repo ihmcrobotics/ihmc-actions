@@ -28,6 +28,8 @@ runs:
 
         echo "Using base URL: $base_url"
 
+        exit 10
+
         # Check if the subproject input is provided
         if [ -n "${{ inputs.subproject }}" ]; then
           dir="repository-group/${{ github.event.repository.name }}/${{ inputs.subproject }}/src/test/build/test-results/test/"
