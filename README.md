@@ -12,6 +12,7 @@ gradle-test is meant to run JUnit tests within a Gradle (Java/Kotlin/Groovy) pro
 | subproject           | false    | The subproject to test, if using a multi-project repo                          | "my-subproject"                          |
 | test-category        | false    | The JUnit Tag / Category to run (default to "fast")                            | "my-tag"                                 |
 | requires-self-hosted | false    | Whether or not to run the job on a self-hosted runner or GitHub-hosted runners | true                                     |
+| timeout-minutes      | false    | Number of minutes before the build job times out (default 30)                  | 45                                       |
 
 #### Example usage
 ```
