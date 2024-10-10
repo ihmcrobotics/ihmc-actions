@@ -32,10 +32,12 @@ runs:
           for file in TEST-*.xml; do
             if [ -f "$file" ]; then
               echo "Sending $file to API"
-              curl -X POST \
+              curl -L -X POST \
                 -H "WorkflowRunID: ${{ github.run_id }}" \
                 -F "file=@$file" \
-                http://evergreen.ihmc.us/api/junitupload.php
+                https://evergreen.ihmc.us/api/junitupload.php
+
+              curl -L -X GET https://evergreen.ihmc.us/api/update_workflow.php
             else
               echo "No XML files found matching TEST-*.xml"
             fi
