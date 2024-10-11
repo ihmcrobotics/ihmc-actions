@@ -46,12 +46,12 @@ runs:
                 -H "WorkflowRunID: ${{ github.run_id }}" \
                 -F "file=@$file" \
                 "$base_url/api/junitupload.php"
-
-              curl -L -X GET "$base_url/api/update_workflow.php"
             else
               echo "No XML files found matching TEST-*.xml"
             fi
           done
+          
+          curl -L -X GET "$base_url/api/update_workflow.php"
         else
           echo "Directory $dir does not exist, skipping."
         fi
