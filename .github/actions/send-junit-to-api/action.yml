@@ -50,9 +50,6 @@ runs:
               echo "No XML files found matching TEST-*.xml"
             fi
           done
-
-          echo "Calling force update - $base_url/api/update_workflow.php"
-          curl -L -X GET "$base_url/api/update_workflow.php"
         else
           echo "Directory $dir does not exist, skipping."
         fi
