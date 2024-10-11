@@ -77,7 +77,7 @@ jobs:
             cd repository-group/$repo
           
             # Try to checkout the current ref
-            if git rev-parse --verify $CURRENT_REF >/dev/null 2>&1; then
+            if git rev-parse --verify origin/$CURRENT_REF >/dev/null 2>&1; then
               git checkout $CURRENT_REF
             else
               echo "Ref $CURRENT_REF not found in $repo, checking out develop"
