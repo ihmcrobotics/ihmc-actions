@@ -59,7 +59,7 @@ jobs:
       - name: Checkout extra repos
         env:
           REPOS: ${{ inputs.extra-repos }}
-          CURRENT_REF: ${{ github.ref_name }}
+          CURRENT_REF: ${{ github.head_ref }}
           ROSIE_PERSONAL_ACCESS_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
         run: |
           # Parse JSON input and generate repo list
