@@ -80,8 +80,9 @@ jobs:
             if git rev-parse --verify origin/$CURRENT_REF >/dev/null 2>&1; then
               git checkout $CURRENT_REF
             else
-              echo "Ref $CURRENT_REF not found in $repo, checking out develop"
-              git checkout develop || echo "Failed to checkout develop for $repo"
+              echo "Ref $CURRENT_REF not found in $repo, using the default branch"
+              git status
+              # git checkout develop || echo "Failed to checkout develop for $repo"
             fi
           
             cd ../../
