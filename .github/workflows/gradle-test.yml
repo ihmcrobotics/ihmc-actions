@@ -116,7 +116,7 @@ jobs:
           git lfs fetch
           git lfs pull
           
-          gradle test -Pcategory=$TEST_CATEGORY --no-daemon -PrunningOnCIServer=true -Dorg.gradle.jvmargs="-Xmx4G"
+          gradle test --info -Pcategory=$TEST_CATEGORY --no-daemon -PrunningOnCIServer=true -Dorg.gradle.jvmargs="-Xmx4G"
 
       - name: Publish Test Report - ${{ inputs.test-category }}
         uses: mikepenz/action-junit-report@v4
