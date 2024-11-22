@@ -60,11 +60,12 @@ jobs:
         env:
           REPOS: ${{ inputs.extra-repos }}
           CURRENT_REF: ${{ github.head_ref }}
+          REF_NAME: ${{ github.ref_name }}
           ROSIE_PERSONAL_ACCESS_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
         run: |
           # Checkout integrated dependency repositories
           
-          echo "Parsing JSON repository list"
+          echo "::error::Parsing JSON repository list"
           REPO_LIST=$(echo "$REPOS" | jq -r '.[]')
           echo "Checking out $REPO_LIST using minimal resources"
           
@@ -99,8 +100,8 @@ jobs:
                 git remote add origin https://github.com/ihmcrobotics/$repo.git repository-group/$repo
               fi
             
-              echo "git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $CURRENT_REF"
-              git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $CURRENT_REF
+              echo "git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $REF_NAME"
+              git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $REF_NAME
               echo "git checkout --progress --force FETCH_HEAD"
               git checkout --progress --force FETCH_HEAD
             fi
