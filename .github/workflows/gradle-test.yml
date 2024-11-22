@@ -68,7 +68,7 @@ jobs:
           
           fetch() {
             echo "Fetching branch: $1"
-            echo "::command::git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $1:refs/remotes/origin/$1"
+            echo "##[command]git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $1:refs/remotes/origin/$1"
             git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $1:refs/remotes/origin/$1
           }
           
@@ -84,9 +84,10 @@ jobs:
             cd repository-group/$repo
           
             echo "Disabling automatic garbage collection"
+            echo "##[command]git config --local gc.auto 0"
             git config --local gc.auto 0
           
-            echo "Adding remote for $repo"
+            echo "##[command]git remote add origin https://github.com/ihmcrobotics/$repo.git repository-group/$repo"
             if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
               echo "Using ihmc-rosie personal access token"
               git remote add origin https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git
@@ -107,8 +108,8 @@ jobs:
             fi
             
             echo "::group::Checking out the ref"
-            echo "##[command]git checkout --progress --force -B FETCH_HEAD"
-            git checkout --progress --force -B FETCH_HEAD
+            echo "##[command]git checkout --progress --force FETCH_HEAD"
+            git checkout --progress --force FETCH_HEAD
             echo "::endgroup::"
           
             cd ../../
