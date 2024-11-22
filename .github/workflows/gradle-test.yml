@@ -62,28 +62,56 @@ jobs:
           CURRENT_REF: ${{ github.head_ref }}
           ROSIE_PERSONAL_ACCESS_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
         run: |
-          # Parse JSON input and generate repo list
+          # Checkout integrated dependency repositories
+          
+          fetch() {
+            echo "Fetching branch: $1"
+            echo "##[command]git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $1:refs/remotes/origin/$1"
+            git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $1:refs/remotes/origin/$1
+          }
+          
+          echo "Checking out $REPOS using minimal resources"
           REPO_LIST=$(echo "$REPOS" | jq -r '.[]')
           
-          # Checkout each repository
           for repo in $REPO_LIST; do
-            echo "Checking out $repo"
-            if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
-              echo "Using ihmc-rosie personal access token to clone $repo"
-              git clone https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git repository-group/$repo
-            else
-              git clone https://github.com/ihmcrobotics/$repo.git repository-group/$repo
-            fi
+          
+            echo "::group::Initializing repository-group/$repo"
+            echo "##[command]git init repository-group/$repo"
+            git init repository-group/$repo
+            echo "::endgroup::"
             cd repository-group/$repo
           
-            # Try to checkout the current ref
-            if git rev-parse --verify origin/$CURRENT_REF >/dev/null 2>&1; then
-              git checkout $CURRENT_REF
+            echo "Disabling automatic garbage collection"
+            echo "##[command]git config --local gc.auto 0"
+            git config --local gc.auto 0
+          
+            echo "##[command]git remote add origin https://github.com/ihmcrobotics/$repo.git repository-group/$repo"
+            if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
+              echo "Using ihmc-rosie personal access token"
+              git remote add origin https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git
             else
-              echo "Ref $CURRENT_REF not found in $repo, using the default branch"
-              git status
-              # git checkout develop || echo "Failed to checkout develop for $repo"
+              git remote add origin https://github.com/ihmcrobotics/$repo.git repository-group/$repo
             fi
+          
+            if [ -z "$CURRENT_REF" ]; then
+              default_branch=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
+              echo "github.head_ref is empty. This only work when triggered by PR push. Using default branch: $default_branch"
+              fetch "$default_branch"
+            else
+              if git ls-remote --exit-code --heads origin $CURRENT_REF >/dev/null 2>&1; then
+                echo "Found matching branch in $repo: $CURRENT_REF"
+                fetch "$CURRENT_REF"
+              else
+                default_branch=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
+                echo "$CURRENT_REF not found in $repo. Using default branch: $default_branch"
+                fetch "$default_branch"
+              fi
+            fi
+            
+            echo "::group::Checking out the ref"
+            echo "##[command]git checkout --progress --force FETCH_HEAD"
+            git checkout --progress --force FETCH_HEAD
+            echo "::endgroup::"
           
             cd ../../
           done
