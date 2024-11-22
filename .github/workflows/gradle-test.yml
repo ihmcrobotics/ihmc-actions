@@ -60,31 +60,29 @@ jobs:
         env:
           REPOS: ${{ inputs.extra-repos }}
           CURRENT_REF: ${{ github.head_ref }}
-          REF_NAME: ${{ github.ref_name }}
+          REF: ${{ github.ref }}
           ROSIE_PERSONAL_ACCESS_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
         run: |
           # Checkout integrated dependency repositories
           
-          echo "::error::Parsing JSON repository list"
+          echo "Parsing JSON repository list"
           REPO_LIST=$(echo "$REPOS" | jq -r '.[]')
           echo "Checking out $REPO_LIST using minimal resources"
           
           
           for repo in $REPO_LIST; do
           
-            if [ -z "$CURRENT_REF" ]; then
-              echo "::error::CURRENT_REF is not set. Cannot proceed with checkout."
-          
+            if [ -z "$CURRENT_REF" ]; then          
               if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
-                echo "git -c protocol.version=2 clone --depth 1 https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git"
+                echo "::command::git -c protocol.version=2 clone --depth 1 https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git"
                 git -c protocol.version=2 clone --depth 1 https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git
               else
-                echo "git -c protocol.version=2 clone --depth 1 https://@github.com/ihmcrobotics/$repo.git"
+                echo "::command::git -c protocol.version=2 clone --depth 1 https://@github.com/ihmcrobotics/$repo.git"
                 git -c protocol.version=2 clone --depth 1 https://@github.com/ihmcrobotics/$repo.git
               fi
             else
               echo "::group::Initializing repository-group/$repo"
-              echo -e "\e[34mgit init repository-group/$repo\e[0m"
+              echo "::command::git init repository-group/$repo"
               git init repository-group/$repo
               echo "::endgroup::"
               cd repository-group/$repo
@@ -100,8 +98,8 @@ jobs:
                 git remote add origin https://github.com/ihmcrobotics/$repo.git repository-group/$repo
               fi
             
-              echo "git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $REF_NAME"
-              git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $REF_NAME
+              echo "git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $REF"
+              git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $REF
               echo "git checkout --progress --force FETCH_HEAD"
               git checkout --progress --force FETCH_HEAD
             fi
