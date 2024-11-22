@@ -95,12 +95,15 @@ jobs:
           
             if [ -z "$CURRENT_REF" ]; then
               default_branch=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
+              echo "github.head_ref is empty. This only work when triggered by PR push. Using default branch: $default_branch"
               fetch "$default_branch"
             else
               if git ls-remote --exit-code --heads origin $CURRENT_REF >/dev/null 2>&1; then
+                echo "Found matching branch in $repo: $CURRENT_REF"
                 fetch "$CURRENT_REF"
               else
                 default_branch=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
+                echo "$CURRENT_REF not found in $repo. Using default branch: $default_branch"
                 fetch "$default_branch"
               fi
             fi
