@@ -78,7 +78,7 @@ jobs:
           for repo in $REPO_LIST; do
           
             echo "::group::Initializing repository-group/$repo"
-            echo "::command::git init repository-group/$repo"
+            echo "##[command]git init repository-group/$repo"
             git init repository-group/$repo
             echo "::endgroup::"
             cd repository-group/$repo
@@ -106,23 +106,10 @@ jobs:
               fi
             fi
             
-            echo "git checkout --progress --force FETCH_HEAD"
-            git checkout --progress --force FETCH_HEAD
-            
-            # echo "Adding remote for $repo"
-            # if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
-            #   echo "Using ihmc-rosie personal access token"
-            #   echo "[command]git -c protocol.version=2 clone --depth 1 --progress --single-branch --branch $CURRENT_REF https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git repository-group/$repo"
-            #   git -c protocol.version=2 clone --depth 1 --progress --single-branch --branch $CURRENT_REF https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git repository-group/$repo
-            # else
-            #   git remote add origin https://github.com/ihmcrobotics/$repo.git repository-group/$repo
-            # fi
-            
-            #              echo "git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $REF"
-            #              git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $REF
-            #              echo "git checkout --progress --force FETCH_HEAD"
-            #              git checkout --progress --force FETCH_HEAD
-            # fi
+            echo "::group::Checking out the ref"
+            echo "##[command]git checkout --progress --force -B FETCH_HEAD"
+            git checkout --progress --force -B FETCH_HEAD
+            echo "::endgroup::"
           
             cd ../../
           done
