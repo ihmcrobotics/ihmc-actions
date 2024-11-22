@@ -68,8 +68,6 @@ jobs:
           REPO_LIST=$(echo "$REPOS" | jq -r '.[]')
           echo "Checking out $REPO_LIST using minimal resources"
           
-          echo "Disabling automatic garbage collection"
-          git config --local gc.auto 0
           
           for repo in $REPO_LIST; do
           
@@ -89,6 +87,9 @@ jobs:
               git init repository-group/$repo
               echo "::endgroup::"
               cd repository-group/$repo
+          
+              echo "Disabling automatic garbage collection"
+              git config --local gc.auto 0
             
               echo "Adding remote for $repo"
               if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
