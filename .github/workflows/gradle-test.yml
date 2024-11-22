@@ -66,9 +66,8 @@ jobs:
         run: |
           # Checkout integrated dependency repositories
           
-          echo "Parsing JSON repository list"
+          echo "Checking out $REPOS using minimal resources"
           REPO_LIST=$(echo "$REPOS" | jq -r '.[]')
-          echo "Checking out $REPO_LIST using minimal resources"
           
           for repo in $REPO_LIST; do
           
@@ -95,11 +94,11 @@ jobs:
               echo "::command::git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $default_branch:refs/remotes/origin/$default_branch"
               git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $default_branch:refs/remotes/origin/$default_branch
             else
-              
+              echo "TODO"
             fi
             
-            echo "git checkout --progress --force FETCH_HEAD"
-            git checkout --progress --force FETCH_HEAD
+            # echo "git checkout --progress --force FETCH_HEAD"
+            # git checkout --progress --force FETCH_HEAD
             
             # echo "Adding remote for $repo"
             # if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
