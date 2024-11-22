@@ -69,8 +69,10 @@ jobs:
           
           echo "Checking out $REPO_LIST using minimal resources"
           for repo in $REPO_LIST; do
-            echo "Initializing repository-group/$repo"
+            echo "::group::Initializing repository-group/$repo"
+            echo -e "\e[34mgit init repository-group/$repo\e[0m"
             git init repository-group/$repo
+            echo "::endgroup::"
             cd repository-group/$repo
             
             echo "Adding remote for $repo"
