@@ -82,14 +82,14 @@ jobs:
                 git -c protocol.version=2 clone --depth 1 https://@github.com/ihmcrobotics/$repo.git
               fi
             else
-#              echo "::group::Initializing repository-group/$repo"
-#              echo "::command::git init repository-group/$repo"
-#              git init repository-group/$repo
-#              echo "::endgroup::"
-#              cd repository-group/$repo
-#
-#              echo "Disabling automatic garbage collection"
-#              git config --local gc.auto 0
+              #              echo "::group::Initializing repository-group/$repo"
+              #              echo "::command::git init repository-group/$repo"
+              #              git init repository-group/$repo
+              #              echo "::endgroup::"
+              #              cd repository-group/$repo
+              #
+              #              echo "Disabling automatic garbage collection"
+              #              git config --local gc.auto 0
             
               echo "Adding remote for $repo"
               if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
@@ -100,10 +100,10 @@ jobs:
                 git remote add origin https://github.com/ihmcrobotics/$repo.git repository-group/$repo
               fi
             
-#              echo "git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $REF"
-#              git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $REF
-#              echo "git checkout --progress --force FETCH_HEAD"
-#              git checkout --progress --force FETCH_HEAD
+              #              echo "git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $REF"
+              #              git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $REF
+              #              echo "git checkout --progress --force FETCH_HEAD"
+              #              git checkout --progress --force FETCH_HEAD
             fi
           
             cd ../../
