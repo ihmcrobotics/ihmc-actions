@@ -61,7 +61,7 @@ jobs:
           REPOS: ${{ inputs.extra-repos }}
           CURRENT_REF: ${{ github.head_ref }}
           ROSIE_PERSONAL_ACCESS_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
-        run: bash ${GITHUB_WORKSPACE}/scripts/checkout-extra-repos.sh
+        run: bash ../scripts/checkout-extra-repos.sh
 
       - name: Setup JDK
         uses: actions/setup-java@v4
