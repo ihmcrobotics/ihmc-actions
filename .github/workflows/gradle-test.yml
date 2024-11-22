@@ -89,7 +89,7 @@ jobs:
               git remote add origin https://github.com/ihmcrobotics/$repo.git repository-group/$repo
             fi
           
-            echo $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+            echo $(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
           
             # if [ -z "$CURRENT_REF" ]; then          
             #   if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
