@@ -67,7 +67,7 @@ jobs:
           
           # Checkout each repository using minimal bandwidth
           for repo in $REPO_LIST; do
-            echo "Checking out $repo"
+            echo "Checking out $repo to CURRENT_REF: $CURRENT_REF"
             git init repository-group/$repo
             cd repository-group/$repo
             
@@ -78,8 +78,9 @@ jobs:
               git remote add origin https://github.com/ihmcrobotics/$repo.git repository-group/$repo
             fi
           
-            git fetch --depth 1 origin $CURRENT_REF
-            git checkout FETCH_HEAD
+            git config --local gc.auto 0
+            git fetch -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth 1 origin $CURRENT_REF
+            git checkout --progress --force FETCH_HEAD
           
             cd ../../
           done
