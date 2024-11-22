@@ -89,17 +89,17 @@ jobs:
               git remote add origin https://github.com/ihmcrobotics/$repo.git repository-group/$repo
             fi
           
-            echo $(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
-          
-            # if [ -z "$CURRENT_REF" ]; then          
-            #   if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
-            #     echo "::command::git -c protocol.version=2 clone --depth 1 https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git"
-            #     git -c protocol.version=2 clone --depth 1 https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git
-            #   else
-            #     echo "::command::git -c protocol.version=2 clone --depth 1 https://@github.com/ihmcrobotics/$repo.git"
-            #     git -c protocol.version=2 clone --depth 1 https://@github.com/ihmcrobotics/$repo.git
-            #   fi
-            # else
+            if [ -z "$CURRENT_REF" ]; then
+              default_branch=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
+              echo "Checking out default branch: $default_branch"
+              echo "::command::git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $default_branch:refs/remotes/origin/$default_branch"
+              git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $default_branch:refs/remotes/origin/$default_branch
+            else
+              
+            fi
+            
+            echo "git checkout --progress --force FETCH_HEAD"
+            git checkout --progress --force FETCH_HEAD
             
             # echo "Adding remote for $repo"
             # if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
