@@ -65,25 +65,21 @@ jobs:
           # Parse JSON input and generate repo list
           REPO_LIST=$(echo "$REPOS" | jq -r '.[]')
           
-          # Checkout each repository
+          # Checkout each repository using minimal bandwidth
           for repo in $REPO_LIST; do
             echo "Checking out $repo"
+            git init repository-group/$repo
+            cd repository-group/$repo
+            
             if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
               echo "Using ihmc-rosie personal access token to clone $repo"
-              git clone https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git repository-group/$repo
+              git remote add origin https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git
             else
-              git clone https://github.com/ihmcrobotics/$repo.git repository-group/$repo
+              git remote add origin https://github.com/ihmcrobotics/$repo.git repository-group/$repo
             fi
-            cd repository-group/$repo
           
-            # Try to checkout the current ref
-            if git rev-parse --verify origin/$CURRENT_REF >/dev/null 2>&1; then
-              git checkout $CURRENT_REF
-            else
-              echo "Ref $CURRENT_REF not found in $repo, using the default branch"
-              git status
-              # git checkout develop || echo "Failed to checkout develop for $repo"
-            fi
+            git fetch --depth 1 origin $CURRENT_REF
+            git checkout FETCH_HEAD
           
             cd ../../
           done
