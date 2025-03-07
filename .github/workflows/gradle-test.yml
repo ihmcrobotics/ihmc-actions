@@ -37,7 +37,7 @@ jobs:
     timeout-minutes: ${{ inputs.timeout-minutes }}
     runs-on: ${{ inputs.requires-self-hosted && 'self-hosted' || 'ubuntu-latest' }}
     container:
-      image: ${{ inputs.requires-self-hosted && 'ihmcrobotics/ihmc-runner-nvidia:1.0.2' || 'ihmcrobotics/ihmc-runner:1.0.0' }}
+      image: ${{ inputs.requires-self-hosted && 'ihmcrobotics/ihmc-runner-nvidia:1.0.3' || 'ihmcrobotics/ihmc-runner:1.0.0' }}
       options: ${{ inputs.requires-self-hosted && '--runtime=nvidia --gpus all --cpus 4' || '--cpus 4' }}
     steps:
       # Checkout repository-group
