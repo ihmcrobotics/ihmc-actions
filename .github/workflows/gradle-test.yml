@@ -141,7 +141,6 @@ jobs:
           fi
           
           git lfs install --local
-          git lfs fetch
           git lfs pull
           
           gradle test -Pcategory=$TEST_CATEGORY --no-daemon -PrunningOnCIServer=true -Dorg.gradle.jvmargs="-Xmx4G"
