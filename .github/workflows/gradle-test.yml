@@ -61,6 +61,7 @@ jobs:
           REPOS: ${{ inputs.extra-repos }}
           CURRENT_REF: ${{ github.head_ref }}
           ROSIE_PERSONAL_ACCESS_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
+          GIT_LFS_SKIP_SMUDGE: 1 # Disable LFS
         run: |
           # Checkout integrated dependency repositories
           
@@ -118,8 +119,6 @@ jobs:
             echo "##[command]git checkout --progress --force FETCH_HEAD"
             git checkout --progress --force FETCH_HEAD
             echo "::endgroup::"
-
-            git lfs pull
           
             cd ../../
           done
