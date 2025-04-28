@@ -56,6 +56,20 @@ jobs:
           path: repository-group/${{ github.event.repository.name }}
           lfs: false
 
+      # Checkout current repo LFS
+      - name: LFS cache pull
+        env:
+          ROSIE_PERSONAL_ACCESS_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
+          CURRENT_REPO: ${{ github.event.repository.name }}
+        run: |
+          cd repository-group/$CURRENT_REPO
+          if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
+            git config --local lfs.url https://$ROSIE_PERSONAL_ACCESS_TOKEN:$ROSIE_PERSONAL_ACCESS_TOKEN@gitlfs.ihmc.us/$CURRENT_REPO
+          else
+            git config --local lfs.url https://gitlfs.ihmc.us/$CURRENT_REPO
+          fi
+          git lfs pull
+
       - name: Checkout extra repos
         env:
           REPOS: ${{ inputs.extra-repos }}
@@ -81,12 +95,6 @@ jobs:
             git init repository-group/$repo
             echo "::endgroup::"
             cd repository-group/$repo
-
-            if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
-              git config lfs.url https://$ROSIE_PERSONAL_ACCESS_TOKEN:$ROSIE_PERSONAL_ACCESS_TOKEN@gitlfs.ihmc.us/$repo
-            else
-              git config lfs.url https://gitlfs.ihmc.us/$repo
-            fi
           
             echo "Disabling automatic garbage collection"
             echo "##[command]git config --local gc.auto 0"
