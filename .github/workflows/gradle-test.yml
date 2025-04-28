@@ -61,14 +61,13 @@ jobs:
           REPOS: ${{ inputs.extra-repos }}
           CURRENT_REF: ${{ github.head_ref }}
           ROSIE_PERSONAL_ACCESS_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
-          GIT_LFS_SKIP_SMUDGE: 1
         run: |
           # Checkout integrated dependency repositories
           
           fetch() {
             echo "Fetching branch: $1"
             echo "##[command]git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $1:refs/remotes/origin/$1"
-            git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $1:refs/remotes/origin/$1
+            GIT_LFS_SKIP_SMUDGE=1 git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $1:refs/remotes/origin/$1
           }
           
           echo "Checking out $REPOS using minimal resources"
@@ -111,7 +110,7 @@ jobs:
             
             echo "::group::Checking out the ref"
             echo "##[command]git checkout --progress --force FETCH_HEAD"
-            git checkout --progress --force FETCH_HEAD
+            GIT_LFS_SKIP_SMUDGE=1 git checkout --progress --force FETCH_HEAD
             echo "::endgroup::"
 
             echo "::group::Fetching LFS files"
