@@ -67,7 +67,7 @@ jobs:
           fetch() {
             echo "Fetching branch: $1"
             echo "##[command]git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $1:refs/remotes/origin/$1"
-            GIT_LFS_SKIP_SMUDGE=1 git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $1:refs/remotes/origin/$1
+            git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $1:refs/remotes/origin/$1
           }
           
           echo "Checking out $REPOS using minimal resources"
@@ -80,6 +80,12 @@ jobs:
             git init repository-group/$repo
             echo "::endgroup::"
             cd repository-group/$repo
+
+            if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
+              git config lfs.url https://$ROSIE_PERSONAL_ACCESS_TOKEN:$ROSIE_PERSONAL_ACCESS_TOKEN@gitlfs.ihmc.us/$repo
+            else
+              git config lfs.url https://gitlfs.ihmc.us/$repo
+            fi
           
             echo "Disabling automatic garbage collection"
             echo "##[command]git config --local gc.auto 0"
@@ -110,18 +116,10 @@ jobs:
             
             echo "::group::Checking out the ref"
             echo "##[command]git checkout --progress --force FETCH_HEAD"
-            GIT_LFS_SKIP_SMUDGE=1 git checkout --progress --force FETCH_HEAD
+            git checkout --progress --force FETCH_HEAD
             echo "::endgroup::"
 
-            echo "::group::Fetching LFS files"
-            if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
-              git config lfs.url https://$ROSIE_PERSONAL_ACCESS_TOKEN:$ROSIE_PERSONAL_ACCESS_TOKEN@gitlfs.ihmc.us/$repo
-            else
-              git config lfs.url https://gitlfs.ihmc.us/$repo
-            fi
-            git lfs install --local
             git lfs pull
-            echo "::endgroup::"
           
             cd ../../
           done
