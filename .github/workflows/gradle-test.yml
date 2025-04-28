@@ -30,7 +30,7 @@ on:
         required: false
         type: number
         description: 'Number of minutes before the build job times out (default 30)'
-        default: 30
+        default: 35
 
 jobs:
   build:
