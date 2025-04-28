@@ -113,6 +113,16 @@ jobs:
             echo "##[command]git checkout --progress --force FETCH_HEAD"
             git checkout --progress --force FETCH_HEAD
             echo "::endgroup::"
+
+            echo "::group::Fetching LFS files"
+            if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
+              git config lfs.url https://$ROSIE_PERSONAL_ACCESS_TOKEN:$ROSIE_PERSONAL_ACCESS_TOKEN@gitlfs.ihmc.us/$repo
+            else
+              git config lfs.url https://gitlfs.ihmc.us/$repo
+            fi
+            git lfs install --local
+            git lfs pull
+            echo "::endgroup::"
           
             cd ../../
           done
@@ -140,14 +150,6 @@ jobs:
           else
             cd repository-group/$CURRENT_REPO
           fi
-
-          if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
-            git config lfs.url https://$ROSIE_PERSONAL_ACCESS_TOKEN:$ROSIE_PERSONAL_ACCESS_TOKEN@gitlfs.ihmc.us/$CURRENT_REPO
-          else
-            git config lfs.url https://gitlfs.ihmc.us/$CURRENT_REPO
-          fi
-          git lfs install --local
-          git lfs pull
           
           gradle test -Pcategory=$TEST_CATEGORY --no-daemon -PrunningOnCIServer=true -Dorg.gradle.jvmargs="-Xmx4G"
 
