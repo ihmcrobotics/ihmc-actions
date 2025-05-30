@@ -57,18 +57,18 @@ jobs:
           lfs: false
 
       # Checkout current repo LFS
-      - name: LFS cache pull
-        env:
-          ROSIE_PERSONAL_ACCESS_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
-          CURRENT_REPO: ${{ github.event.repository.name }}
-        run: |
-          cd repository-group/$CURRENT_REPO
-          if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
-            git config --local lfs.url https://$ROSIE_PERSONAL_ACCESS_TOKEN:$ROSIE_PERSONAL_ACCESS_TOKEN@gitlfs.ihmc.us/$CURRENT_REPO
-          else
-            git config --local lfs.url https://gitlfs.ihmc.us/$CURRENT_REPO
-          fi
-          git lfs pull
+      #- name: LFS cache pull
+      #  env:
+      #    ROSIE_PERSONAL_ACCESS_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
+      #    CURRENT_REPO: ${{ github.event.repository.name }}
+      #  run: |
+      #    cd repository-group/$CURRENT_REPO
+      #    if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
+      #      git config --local lfs.url https://$ROSIE_PERSONAL_ACCESS_TOKEN:$ROSIE_PERSONAL_ACCESS_TOKEN@gitlfs.ihmc.us/$CURRENT_REPO
+      #    else
+      #      git config --local lfs.url https://gitlfs.ihmc.us/$CURRENT_REPO
+      #    fi
+      #    git lfs pull
 
       - name: Checkout extra repos
         env:
