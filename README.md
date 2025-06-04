@@ -30,10 +30,6 @@ jobs:
     uses: ihmcrobotics/ihmc-actions/.github/workflows/gradle-test.yml@main
 ```
 
-## Actions
-### send-junit-to-api
-action sends junit xml files to evergreen api
-
 #### Example ussage
 ```
 name: Gradle test
@@ -98,12 +94,4 @@ jobs:
           report_paths: '**/build/test-results/test/TEST-*.xml'
           detailed_summary: true
           check_name: JUnit Test Report ${{ inputs.subproject || ''}}
-
-      # Use send-junit-to-api action
-      - name: Send JUNIT XML Files to Evergreen API    
-        uses: ihmcrobotics/ihmc-actions/.github/actions/send-junit-to-api@main
-        if: success() || failure() # always run even if the previous step fails
-        with:
-          subproject: ${{ inputs.subproject }}
-
 ```
