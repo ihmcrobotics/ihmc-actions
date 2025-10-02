@@ -157,7 +157,7 @@ jobs:
             cd repository-group/$CURRENT_REPO
           fi
           
-          gradle test -Pcategory=$TEST_CATEGORY --no-daemon -PrunningOnCIServer=true -Dorg.gradle.jvmargs="-Xmx4G"
+          gradle test -Pcategory=$TEST_CATEGORY --no-daemon --no-build-cache --refresh-dependencies -PrunningOnCIServer=true -Dorg.gradle.jvmargs="-Xmx4G"
 
       - name: Publish Test Report - ${{ inputs.test-category }}
         uses: mikepenz/action-junit-report@v4
