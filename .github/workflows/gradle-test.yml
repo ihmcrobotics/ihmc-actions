@@ -40,6 +40,10 @@ jobs:
       image: ${{ inputs.requires-self-hosted && 'ihmcrobotics/ihmc-runner-nvidia:1.0.4' || 'ihmcrobotics/ihmc-runner:1.0.1' }}
       options: ${{ inputs.requires-self-hosted && '--runtime=nvidia --gpus all --cpus 4' || '--cpus 2' }}
     steps:
+      - name: Add robotlabfiles host mapping
+        run: |
+          echo "184.182.233.155 robotlabfiles.ihmc.us" | sudo tee -a /etc/hosts
+
       # Checkout repository-group
       - name: Checkout repository-group
         uses: actions/checkout@v4
