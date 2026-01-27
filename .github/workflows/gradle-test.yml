@@ -41,8 +41,9 @@ jobs:
       options: ${{ inputs.requires-self-hosted && '--runtime=nvidia --gpus all --cpus 4' || '--cpus 2' }}
     steps:
       - name: Add robotlabfiles host mapping
+        if: ${{ inputs.requires-self-hosted }}
         run: |
-          echo "184.182.233.155 robotlabfiles.ihmc.us" | sudo tee -a /etc/hosts
+          echo "192.168.66.2 robotlabfiles.ihmc.us" | sudo tee -a /etc/hosts
 
       # Checkout repository-group
       - name: Checkout repository-group
