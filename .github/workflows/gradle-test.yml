@@ -69,11 +69,13 @@ jobs:
         run: |
           cd repository-group/$CURRENT_REPO
           if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
-            echo "Using PAT in LFS URL"
+            echo "Using PAT in LFS/submodule URLs"
             git config --local lfs.url https://ihmc-rosie:$ROSIE_PERSONAL_ACCESS_TOKEN@gitlfs.ihmc.us/$CURRENT_REPO
+            git config --global url."https://ihmc-rosie:$ROSIE_PERSONAL_ACCESS_TOKEN@github.com/ihmcrobotics/".insteadOf "git@github.com:ihmcrobotics/"
           else
-            echo "Not using PAT in LFS URL"
+            echo "Not using PAT in LFS/submodule URLs"
             git config --local lfs.url https://gitlfs.ihmc.us/$CURRENT_REPO
+            git config --global url."https://github.com/ihmcrobotics/".insteadOf "git@github.com:ihmcrobotics/"
           fi
           git lfs pull
           echo "##[command]git submodule update --init --recursive"
