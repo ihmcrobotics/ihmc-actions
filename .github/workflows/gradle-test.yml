@@ -40,15 +40,16 @@ jobs:
       image: ${{ inputs.requires-self-hosted && 'ihmcrobotics/ihmc-runner-nvidia:1.0.4' || 'ihmcrobotics/ihmc-runner:1.0.1' }}
       options: ${{ inputs.requires-self-hosted && '--runtime=nvidia --gpus all --cpus 4' || '--cpus 2' }}
     steps:
-      - name: Add robotlabfiles host mapping
+      - name: Add robotlabfiles host mapping for local runners
         if: ${{ inputs.requires-self-hosted }}
         run: |
           echo "192.168.66.2 robotlabfiles.ihmc.us" | sudo tee -a /etc/hosts
 
-      - name: Set external DNS
+      - name: Add hosts entries for github runners
+        if: ${{ !inputs.requires-self-hosted }}
         run: |
-          echo -e "nameserver 184.182.233.53\nnameserver 1.1.1.1" | sudo tee /etc/resolv.conf
-          cat /etc/resolv.conf
+          echo "184.182.233.155 gitlfs.ihmc.us" | sudo tee -a /etc/hosts
+          echo "184.182.233.155 robotlabfiles.ihmc.us" | sudo tee -a /etc/hosts
 
       # Checkout repository-group
       - name: Checkout repository-group
