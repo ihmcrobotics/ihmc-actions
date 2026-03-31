@@ -99,8 +99,6 @@ jobs:
           echo "Checking out $REPOS in parallel using minimal resources"
           REPO_LIST=$(echo "$REPOS" | jq -r '.[]')
           
-          pids=()
-  
           for repo in $REPO_LIST; do
           (
             set -e
@@ -143,13 +141,9 @@ jobs:
           
             echo "[$repo] done"            
           ) &
-          
-          pids+=($!)
           done
           
-          for pid in "${pids[@]}"; do
-            wait "$pid" || exit 1
-          done
+          wait
 
       - name: Setup JDK
         uses: actions/setup-java@v4
