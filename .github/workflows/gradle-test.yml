@@ -96,53 +96,59 @@ jobs:
             git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $1:refs/remotes/origin/$1
           }
           
-          echo "Checking out $REPOS using minimal resources"
+          echo "Checking out $REPOS in parallel using minimal resources"
           REPO_LIST=$(echo "$REPOS" | jq -r '.[]')
           
+          pids=()
+  
           for repo in $REPO_LIST; do
+          (
+            set -e
+            echo "[$repo] Starting setup"
           
             echo "::group::Initializing repository-group/$repo"
-            echo "##[command]git init repository-group/$repo"
+            echo "[$repo] git init repository-group/$repo"
             git init repository-group/$repo
             echo "::endgroup::"
             cd repository-group/$repo
           
-            echo "Disabling automatic garbage collection"
-            echo "##[command]git config --local gc.auto 0"
+            echo "[$repo] Disabling automatic garbage collection"
             git config --local gc.auto 0
           
-            echo "##[command]git remote add origin https://github.com/ihmcrobotics/$repo.git repository-group/$repo"
             if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
-              echo "Using ihmc-rosie personal access token"
+              echo "[$repo] Using PAT"
               git remote add origin https://"$ROSIE_PERSONAL_ACCESS_TOKEN"@github.com/ihmcrobotics/$repo.git
             else
-              git remote add origin https://github.com/ihmcrobotics/$repo.git repository-group/$repo
+              git remote add origin https://github.com/ihmcrobotics/$repo.git
             fi
-          
             if [ -z "$CURRENT_REF" ]; then
               default_branch=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
-              echo "github.head_ref is empty. This only work when triggered by PR push. Using default branch: $default_branch"
+              echo "[$repo] default branch: $default_branch"
               fetch "$default_branch"
             else
               if git ls-remote --exit-code --heads origin $CURRENT_REF >/dev/null 2>&1; then
-                echo "Found matching branch in $repo: $CURRENT_REF"
+                echo "[$repo] using branch $CURRENT_REF"
                 fetch "$CURRENT_REF"
               else
                 default_branch=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
-                echo "$CURRENT_REF not found in $repo. Using default branch: $default_branch"
+                echo "[$repo] fallback to $default_branch"
                 fetch "$default_branch"
               fi
             fi
-            
-            echo "::group::Checking out the ref"
-            echo "##[command]git checkout --progress --force FETCH_HEAD"
+            echo "::group::[$repo] checkout"
             git checkout --progress --force FETCH_HEAD
             echo "::endgroup::"
-            
-            echo "##[command]git submodule update --init --recursive"
+            echo "[$repo] submodules"
             git submodule update --init --recursive
           
-            cd ../../
+            echo "[$repo] done"            
+          ) &
+          
+          pids+=($!)
+          done
+          
+          for pid in "${pids[@]}"; do
+            wait "$pid" || exit 1
           done
 
       - name: Setup JDK
