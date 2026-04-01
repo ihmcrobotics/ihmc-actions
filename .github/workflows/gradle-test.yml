@@ -145,7 +145,7 @@ jobs:
             echo "[$repo] git checkout --progress --force FETCH_HEAD"
             git checkout --progress --force FETCH_HEAD
             echo "::endgroup::"
-          
+            
             echo "[$repo] git submodule update --init --recursive"
             git submodule update --init --recursive
           
