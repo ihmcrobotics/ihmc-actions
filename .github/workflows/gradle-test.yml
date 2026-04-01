@@ -140,7 +140,7 @@ jobs:
                 fetch "$default_branch"
               fi
             fi
-          
+            
             echo "::group::[$repo] Checking out the ref"
             echo "[$repo] git checkout --progress --force FETCH_HEAD"
             git checkout --progress --force FETCH_HEAD
