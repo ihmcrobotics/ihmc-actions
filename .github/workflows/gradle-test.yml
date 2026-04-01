@@ -132,7 +132,7 @@ jobs:
               fetch "$default_branch"
             else
               if git ls-remote --exit-code --heads origin $CURRENT_REF >/dev/null 2>&1; then
-                echo "[$repo] Found matching branch in $repo: $CURRENT_REF""
+                echo "[$repo] Found matching branch in $repo: $CURRENT_REF"
                 fetch "$CURRENT_REF"
               else
                 default_branch=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
