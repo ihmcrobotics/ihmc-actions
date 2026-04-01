@@ -117,6 +117,7 @@ jobs:
             cd repository-group/$repo
           
             echo "[$repo] Disabling automatic garbage collection"
+            echo "[$repo] git config --local gc.auto 0"
             git config --local gc.auto 0
           
             if [ -n "$ROSIE_PERSONAL_ACCESS_TOKEN" ]; then
@@ -127,7 +128,7 @@ jobs:
             fi
             if [ -z "$CURRENT_REF" ]; then
               default_branch=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
-              echo "[$repo] default branch: $default_branch"
+              echo "[$repo] Using default branch: $default_branch"
               fetch "$default_branch"
             else
               if git ls-remote --exit-code --heads origin $CURRENT_REF >/dev/null 2>&1; then
@@ -139,10 +140,13 @@ jobs:
                 fetch "$default_branch"
               fi
             fi
+          
             echo "::group::[$repo] Checking out the ref"
+            echo "[$repo] git checkout --progress --force FETCH_HEAD"
             git checkout --progress --force FETCH_HEAD
             echo "::endgroup::"
-            echo "[$repo] submodules"
+          
+            echo "[$repo] git submodule update --init --recursive"
             git submodule update --init --recursive
           
             echo "[$repo] done"            
