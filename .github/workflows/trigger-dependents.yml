@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   dispatch:
@@ -28,9 +29,27 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
           SOURCE_REPO: ${{ inputs.source-repo }}
+          SOURCE_SHA: ${{ github.sha }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
         run: |
           graph="ihmc-actions/dependency-graph.json"
+          SOURCE_TIME=$(gh api "repos/$SOURCE_REPOSITORY/commits/$SOURCE_SHA" --jq .commit.committer.date)
+          SOURCE_EPOCH=$(date -d "$SOURCE_TIME" +%s)
+
           jq -r --arg src "$SOURCE_REPO" '.[$src][] | @tsv' "$graph" | while IFS=$'\t' read -r repo wf; do
+            DEP_TIME=$(gh api "repos/ihmcrobotics/$repo/commits/develop" --jq .commit.committer.date)
+            if [[ $(date -d "$DEP_TIME" +%s) -ge $SOURCE_EPOCH ]]; then
+              echo "Skip $repo: develop updated at or after source ($DEP_TIME >= $SOURCE_TIME)"
+              continue
+            fi
+
+            RUN_TIME=$(gh api "repos/ihmcrobotics/$repo/actions/workflows/$wf/runs?branch=develop&per_page=1" \
+              --jq -r '.workflow_runs[0].created_at // empty')
+            if [[ -n "$RUN_TIME" ]] && [[ $(date -d "$RUN_TIME" +%s) -ge $SOURCE_EPOCH ]]; then
+              echo "Skip $repo: fast CI already triggered since source update ($RUN_TIME)"
+              continue
+            fi
+
             echo "Dispatching $repo / $wf"
             gh api --method POST "repos/ihmcrobotics/$repo/actions/workflows/$wf/dispatches" \
               -f ref=develop || echo "WARN: dispatch failed for $repo"

@@ -33,6 +33,8 @@ jobs:
 ### trigger-dependents
 On push to a source repo's `develop` branch, dispatches fast CI in direct dependents listed in `dependency-graph.json`. Source repos add a thin caller workflow; consumers need only existing `workflow_dispatch`.
 
+Skips dispatch when the dependent's `develop` moved at or after the source update (co-merge case), or when its fast workflow already has a run since then (duplicate dispatch from another source).
+
 Graph format: `"source-repo": [["dependent-repo", "workflow-file.yml"], ...]`. Branch is always `develop`. Add an entry when a repo lists another in `extra-repos`.
 
 ## Actions
