@@ -37,16 +37,18 @@ jobs:
           SOURCE_EPOCH=$(date -d "$SOURCE_TIME" +%s)
 
           jq -r --arg src "$SOURCE_REPO" '.[$src][] | @tsv' "$graph" | while IFS=$'\t' read -r repo wf; do
-            DEP_TIME=$(gh api "repos/ihmcrobotics/$repo/commits/develop" --jq .commit.committer.date)
+            read -r DEP_SHA DEP_TIME < <(gh api "repos/ihmcrobotics/$repo/commits/develop" \
+              --jq -r '[.sha, .commit.committer.date] | @tsv')
             if [[ $(date -d "$DEP_TIME" +%s) -ge $SOURCE_EPOCH ]]; then
               echo "Skip $repo: develop updated at or after source ($DEP_TIME >= $SOURCE_TIME)"
               continue
             fi
 
-            RUN_TIME=$(gh api "repos/ihmcrobotics/$repo/actions/workflows/$wf/runs?branch=develop&per_page=1" \
-              --jq -r '.workflow_runs[0].created_at // empty')
-            if [[ -n "$RUN_TIME" ]] && [[ $(date -d "$RUN_TIME" +%s) -ge $SOURCE_EPOCH ]]; then
-              echo "Skip $repo: fast CI already triggered since source update ($RUN_TIME)"
+            read -r RUN_SHA RUN_TIME < <(gh api "repos/ihmcrobotics/$repo/actions/workflows/$wf/runs?branch=develop&per_page=1" \
+              --jq -r '.workflow_runs[0] | [.head_sha // "", .created_at // ""] | @tsv')
+            if [[ -n "$RUN_TIME" ]] && [[ $(date -d "$RUN_TIME" +%s) -ge $SOURCE_EPOCH ]] \
+                && [[ "$RUN_SHA" == "$DEP_SHA" ]]; then
+              echo "Skip $repo: fast CI already running/completed on current develop ($RUN_SHA)"
               continue
             fi
 
