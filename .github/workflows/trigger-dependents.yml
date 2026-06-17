@@ -9,34 +9,28 @@ on:
     secrets:
       ROSIE_PERSONAL_ACCESS_TOKEN:
         required: true
+      DEPENDENCY_GRAPH:
+        required: true
 
 permissions:
-  contents: read
   actions: read
 
 jobs:
   dispatch:
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: ihmcrobotics/ihmc-actions
-          ref: main
-          path: ihmc-actions
-          token: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
-
       - name: Dispatch dependent fast CI
         env:
           GH_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
+          DEPENDENCY_GRAPH: ${{ secrets.DEPENDENCY_GRAPH }}
           SOURCE_REPO: ${{ inputs.source-repo }}
           SOURCE_SHA: ${{ github.sha }}
           SOURCE_REPOSITORY: ${{ github.repository }}
         run: |
-          graph="ihmc-actions/dependency-graph.json"
           SOURCE_TIME=$(gh api "repos/$SOURCE_REPOSITORY/commits/$SOURCE_SHA" --jq .commit.committer.date)
           SOURCE_EPOCH=$(date -d "$SOURCE_TIME" +%s)
 
-          jq -r --arg src "$SOURCE_REPO" '.[$src][] | @tsv' "$graph" | while IFS=$'\t' read -r repo wf; do
+          echo "$DEPENDENCY_GRAPH" | jq -r --arg src "$SOURCE_REPO" '.[$src][] | @tsv' | while IFS=$'\t' read -r repo wf; do
             read -r DEP_SHA DEP_TIME < <(gh api "repos/ihmcrobotics/$repo/commits/develop" \
               --jq -r '[.sha, .commit.committer.date] | @tsv')
             if [[ $(date -d "$DEP_TIME" +%s) -ge $SOURCE_EPOCH ]]; then
