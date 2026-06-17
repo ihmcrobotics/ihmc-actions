@@ -31,9 +31,11 @@ jobs:
 ```
 
 ### trigger-dependents
-On push to a source repo's `develop` branch, dispatches fast CI in direct dependents listed in the org secret `DEPENDENCY_GRAPH`. Source repos add a thin caller workflow and pass `ROSIE_PERSONAL_ACCESS_TOKEN` and `DEPENDENCY_GRAPH`; consumers need only existing `workflow_dispatch`.
+On push to a source repo's `develop` branch, dispatches workflows in direct dependents listed in the org secret `DEPENDENCY_GRAPH`. Source repos add a thin caller workflow and pass `ROSIE_PERSONAL_ACCESS_TOKEN` and `DEPENDENCY_GRAPH`; consumers need only existing `workflow_dispatch`.
 
-Skips dispatch when the dependent's `develop` moved at or after the source update (co-merge case), or when its fast workflow already has a run on the current `develop` HEAD since then. A recent run on an older commit does not block dispatch.
+Which workflow file is dispatched is configured entirely in the org secret (e.g. `gradle-test-fast.yml` today). This reusable workflow has no knowledge of Gradle, JUnit, or test categories.
+
+Skips dispatch when the dependent's `develop` moved at or after the source update (co-merge case), or when that workflow already has a run on the current `develop` HEAD since then. A recent run on an older commit does not block dispatch.
 
 Graph format (JSON string in org secret): `"source-repo": [["dependent-repo", "workflow-file.yml"], ...]`. Branch is always `develop`. Org admins maintain the secret and grant access to repos with a trigger caller workflow.
 

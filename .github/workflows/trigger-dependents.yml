@@ -19,7 +19,7 @@ jobs:
   dispatch:
     runs-on: self-hosted
     steps:
-      - name: Dispatch dependent fast CI
+      - name: Dispatch dependent workflows
         env:
           GH_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
           DEPENDENCY_GRAPH: ${{ secrets.DEPENDENCY_GRAPH }}
@@ -42,7 +42,7 @@ jobs:
               --jq -r '.workflow_runs[0] | [.head_sha // "", .created_at // ""] | @tsv')
             if [[ -n "$RUN_TIME" ]] && [[ $(date -d "$RUN_TIME" +%s) -ge $SOURCE_EPOCH ]] \
                 && [[ "$RUN_SHA" == "$DEP_SHA" ]]; then
-              echo "Skip $repo: fast CI already running/completed on current develop ($RUN_SHA)"
+              echo "Skip $repo: workflow $wf already running/completed on current develop ($RUN_SHA)"
               continue
             fi
 
