@@ -2,17 +2,19 @@
   "ihmc-open-robotics-software": [
     ["alex", "gradle-test-fast.yml"],
     ["unitree-h1", "gradle-test-fast.yml"],
-    ["ihmc-internal-software", "gradle-test-fast.yml"],
-    ["nadia", "gradle-test-fast.yml"],
-    ["valkyrie", "gradle-test-fast.yml"],
-    ["ihmc-quadrupeds", "gradle-test-fast.yaml"]
+    ["ihmc-internal-software", "gradle-test-fast.yml"]
   ],
   "ihmc-internal-software": [
     ["alex", "gradle-test-fast.yml"],
-    ["unitree-h1", "gradle-test-fast.yml"],
-    ["nadia", "gradle-test-fast.yml"]
+    ["unitree-h1", "gradle-test-fast.yml"]
   ],
   "ihmc-crocoddyl-wrapper": [
     ["unitree-h1", "gradle-test-fast.yml"]
+  ],
+  "alex-hardware": [
+    ["alex", "gradle-test-fast.yml"]
+  ],
+  "ihmc-alex-sdk": [
+    ["alex", "gradle-test-fast.yml"]
   ]
 }
