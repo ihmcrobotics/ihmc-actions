@@ -30,6 +30,18 @@ jobs:
     uses: ihmcrobotics/ihmc-actions/.github/workflows/gradle-test.yml@main
 ```
 
+### trigger-dependents
+On push to a source repo's `develop` branch, dispatches workflows in direct dependents listed in the org secret `DEPENDENCY_GRAPH`. Source repos add a thin caller workflow and pass `ROSIE_PERSONAL_ACCESS_TOKEN` and `DEPENDENCY_GRAPH`; consumers need only existing `workflow_dispatch`.
+Which workflow file is dispatched is configured entirely in the org secret.
+
+Skips dispatch when the dependent's `develop` moved at or after the source update (co-merge case), or when that workflow already has a run on the current `develop` HEAD since then. A recent run on an older commit does not block dispatch.
+
+Graph format (JSON string in org secret): `"source-repo": [["dependent-repo", "workflow-file.yml"], ...]`. Branch is always `develop`. Org admins maintain the secret and grant access to repos with a trigger caller workflow.
+
+## Actions
+### send-junit-to-api
+action sends junit xml files to evergreen api
+
 #### Example ussage
 ```
 name: Gradle test
