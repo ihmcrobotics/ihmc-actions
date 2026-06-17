@@ -1,0 +1,37 @@
+name: Trigger dependents
+
+on:
+  workflow_call:
+    inputs:
+      source-repo:
+        required: true
+        type: string
+    secrets:
+      ROSIE_PERSONAL_ACCESS_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ihmcrobotics/ihmc-actions
+          ref: main
+          path: ihmc-actions
+          token: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
+
+      - name: Dispatch dependent fast CI
+        env:
+          GH_TOKEN: ${{ secrets.ROSIE_PERSONAL_ACCESS_TOKEN }}
+          SOURCE_REPO: ${{ inputs.source-repo }}
+        run: |
+          graph="ihmc-actions/dependency-graph.json"
+          jq -r --arg src "$SOURCE_REPO" '.[$src][] | @tsv' "$graph" | while IFS=$'\t' read -r repo wf; do
+            echo "Dispatching $repo / $wf"
+            gh api --method POST "repos/ihmcrobotics/$repo/actions/workflows/$wf/dispatches" \
+              -f ref=develop || echo "WARN: dispatch failed for $repo"
+          done
