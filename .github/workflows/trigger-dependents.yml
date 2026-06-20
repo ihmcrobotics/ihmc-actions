@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   dispatch:
-    runs-on: self-hosted
+    runs-on: ubuntu-22.04
     steps:
       - name: Dispatch dependent workflows
         env:
