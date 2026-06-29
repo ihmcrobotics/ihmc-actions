@@ -27,19 +27,19 @@ jobs:
           SOURCE_SHA: ${{ github.sha }}
           SOURCE_REPOSITORY: ${{ github.repository }}
         run: |
-          SOURCE_TIME=$(gh api "repos/$SOURCE_REPOSITORY/commits/$SOURCE_SHA" --jq .commit.committer.date)
+          SOURCE_TIME=$(gh api "repos/$SOURCE_REPOSITORY/commits/$SOURCE_SHA" --jq '.commit.committer.date')
           SOURCE_EPOCH=$(date -d "$SOURCE_TIME" +%s)
 
           echo "$DEPENDENCY_GRAPH" | jq -r --arg src "$SOURCE_REPO" '.[$src][] | @tsv' | while IFS=$'\t' read -r repo wf; do
             read -r DEP_SHA DEP_TIME < <(gh api "repos/ihmcrobotics/$repo/commits/develop" \
-              --jq -r '[.sha, .commit.committer.date] | @tsv')
+              --jq '[.sha, .commit.committer.date] | @tsv')
             if [[ $(date -d "$DEP_TIME" +%s) -ge $SOURCE_EPOCH ]]; then
               echo "Skip $repo: develop updated at or after source ($DEP_TIME >= $SOURCE_TIME)"
               continue
             fi
 
             read -r RUN_SHA RUN_TIME < <(gh api "repos/ihmcrobotics/$repo/actions/workflows/$wf/runs?branch=develop&per_page=1" \
-              --jq -r '.workflow_runs[0] | [.head_sha // "", .created_at // ""] | @tsv')
+              --jq '.workflow_runs[0] | [.head_sha // "", .created_at // ""] | @tsv')
             if [[ -n "$RUN_TIME" ]] && [[ $(date -d "$RUN_TIME" +%s) -ge $SOURCE_EPOCH ]] \
                 && [[ "$RUN_SHA" == "$DEP_SHA" ]]; then
               echo "Skip $repo: workflow $wf already running/completed on current develop ($RUN_SHA)"
