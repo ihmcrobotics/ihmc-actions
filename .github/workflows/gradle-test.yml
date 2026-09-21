@@ -53,7 +53,7 @@ jobs:
 
       # Checkout repository-group
       - name: Checkout repository-group
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ihmcrobotics/repository-group
           ref: develop
@@ -62,7 +62,7 @@ jobs:
 
       # Checkout current repo
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: repository-group/${{ github.event.repository.name }}
           lfs: false
@@ -83,7 +83,19 @@ jobs:
             git config --local lfs.url https://gitlfs.ihmc.us/$CURRENT_REPO
             git config --global url."https://github.com/ihmcrobotics/".insteadOf "git@github.com:ihmcrobotics/"
           fi
-          git lfs pull
+          attempt=1
+          while true; do
+            if git lfs pull; then
+              break
+            fi
+            if [ "$attempt" -ge 5 ]; then
+              echo "git lfs pull failed after $attempt attempts"
+              exit 1
+            fi
+            echo "git lfs pull failed (attempt $attempt), retrying in 15s..."
+            attempt=$((attempt + 1))
+            sleep 15
+          done
           echo "##[command]git submodule update --init --recursive"
           git submodule update --init --recursive
 
@@ -152,13 +164,26 @@ jobs:
           done
 
       - name: Setup JDK
-        uses: actions/setup-java@v4
+        id: setup-jdk
+        continue-on-error: true
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Wait before JDK retry
+        if: steps.setup-jdk.outcome == 'failure'
+        run: sleep 20
+
+      - name: Setup JDK (retry)
+        if: steps.setup-jdk.outcome == 'failure'
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           gradle-version: "8.14.3"
 
@@ -178,7 +203,7 @@ jobs:
           gradle test -Pcategory=$TEST_CATEGORY --no-daemon --no-build-cache --refresh-dependencies -PrunningOnCIServer=true -Dorg.gradle.jvmargs="-Xmx4G"
 
       - name: Publish Test Report - ${{ inputs.test-category }}
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v6
         if: success() || failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'
